@@ -837,17 +837,16 @@ class Form implements Renderable
                             $relation = $model->$name();
 
                             $keyName = $relation->getRelated()->getKeyName();
+                            $key = Arr::get($relationValues, $keyName);
 
                             /** @var Model $child */
-                            $child = $relation->findOrNew(Arr::get($relationValues, $keyName));
-
+                            $child = $relation->findOrNew($key);
+                            $fieldsWithRelation = $this->getSubRelationsField($name);
+                            
                             if (Arr::get($relationValues, static::REMOVE_FLAG_NAME) == 1) {
                                 $child->delete();
                                 continue;
-                            }
-
-                            $fieldsWithRelation = $this->getSubRelationsField($name);
-                            $subRelationsValues = Arr::only($relationValues, $fieldsWithRelation);
+                            }                           
 
                             Arr::forget($relationValues, static::REMOVE_FLAG_NAME);
                             Arr::forget($relationValues, $fieldsWithRelation);
@@ -856,13 +855,18 @@ class Form implements Renderable
                             $child->save();
 
                             foreach ($fieldsWithRelation as $relationSubField) {
-                                $this->processSubRelations($child, $relation, $name, $relationSubField, $subRelationsValues);
+                                // get the unprepared data
+                                if ($key) {
+                                    $subRelationsValues = [$relationSubField => Arr::get($relationsData[$name][$key], $relationSubField)];
+                                    $this->processSubRelations($child, $relation, $name, $relationSubField, $subRelationsValues);
+                                }
                             }
                         }
                     }
                     break;
             }
         }
+        // dd("exit");
         // if exist before end
         // db transation will not run
     }
@@ -1159,13 +1163,13 @@ class Form implements Renderable
     {
         $relations = $this->getRelations();
 
-        $builder = $this->model();
+        $model = $this->model();
 
         if ($this->isSoftDeletes) {
-            $builder = $builder->withTrashed();
+            $model = $model->withTrashed();
         }
 
-        $this->model = $builder->with($relations)->findOrFail($id);
+        $this->model = $model->with($relations)->findOrFail($id);
 
         $this->callEditing();
 

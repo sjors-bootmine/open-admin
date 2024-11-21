@@ -192,6 +192,24 @@ trait HasFields
         return false;
     }
 
+
+    /**
+     * Find field class.
+     *
+     * @param string $method
+     *
+     * @return bool|mixed
+     */
+    public static function isRelationField($method)
+    {
+
+        if (in_array($method, ["hasMany", "morphMany", "belongsTo", "belongsToMany", "langTab"])) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Collect assets required by registered field.
      *

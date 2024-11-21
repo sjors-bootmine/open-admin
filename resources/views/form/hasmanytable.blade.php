@@ -1,7 +1,15 @@
+@if (!empty($showAsField))
 @include("admin::form._header")
+@else
+<div class="row has-many-head {{$column_class}}">
+    <h4>{{ $label }}</h4>
+</div>
+
+<hr style="margin-top: 0px;" class="form-border m-0">
+@endif
 
         <div id="has-many-{{$column}}">
-            <table class="table table-with-fields has-many-{{$column}} vertical-align-{{$verticalAlign}}">
+            <table class="{{$uniqueId}} has-many-{{$column}} table table-with-fields vertical-align-{{$verticalAlign}}">
                 <thead>
                 <tr>
                     @if(!empty($options['sortable']))
@@ -19,10 +27,11 @@
                     @endif
                 </tr>
                 </thead>
-                <tbody class="has-many-{{$column}}-forms">
+                <tbody class="{{$uniqueId}} has-many-{{$column}}-forms">
                 @foreach($forms as $pk => $form)
-                    <tr class="has-many-{{$column}}-form fields-group">
-
+                    
+                    <tr class="{{$uniqueId}} has-many-{{$column}}-form fields-group">
+                        
                         @if(!empty($options['sortable']))
                            <td width="20"><span class="icon-arrows-alt-v btn btn-light handle"></span></td>
                         @endif
@@ -30,7 +39,9 @@
                         <?php $hidden = ''; ?>
 
                         @foreach($form->fields() as $field)
-
+                            @php
+                                $field->setParent($column,$pk);
+                            @endphp
                             @if (is_a($field, \OpenAdmin\Admin\Form\Field\Hidden::class))
                                 <?php $hidden .= $field->render(); ?>
                                 @continue
@@ -39,12 +50,12 @@
                             <td>{!! $field->setLabelClass(['hidden'])->setWidth(12, 0)->render() !!}</td>
                         @endforeach
 
-                        <td class="hidden">{!! $hidden !!}</td>
+                        <td class="hidden">{!! $hidden !!}<input type="hidden" class="parentId" name="{{$column}}_id" value="{{ $pk }}"></td>
 
                         @if($options['allowDelete'])
                             <td class="form-group">
                                 <div>
-                                    <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
+                                    <div class="{{$uniqueId}} has-many-{{$column}}-remove remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
                                 </div>
                             </td>
                         @endif
@@ -53,8 +64,8 @@
                 </tbody>
             </table>
 
-            <template class="{{$column}}-tpl">
-                <tr class="has-many-{{$column}}-form fields-group">
+            <template class="{{$uniqueId}} {{$column}}-tpl">
+                <tr class="{{$uniqueId}} has-many-{{$column}}-form fields-group">
 
                     @if(!empty($options['sortable']))
                         <td width="20"><span class="icon-arrows-alt-v btn btn-light handle"></span></td>
@@ -64,7 +75,7 @@
 
                     <td class="form-group">
                         <div>
-                            <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
+                            <div class="{{$uniqueId}} has-many-{{$column}}-remove remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
                         </div>
                     </td>
                 </tr>
@@ -73,9 +84,11 @@
             @if($options['allowCreate'])
                 <div class="form-group">
                     <div class="{{$viewClass['field']}}">
-                        <div class="add btn btn-success btn-sm"><i class="icon-plus"></i>&nbsp;{{ trans('admin.new') }}</div>
+                        <div class="{{$uniqueId}} has-many-{{$column}}-add add btn btn-success btn-sm"><i class="icon-plus"></i>&nbsp;{{ trans('admin.new') }}</div>
                     </div>
                 </div>
             @endif
         </div>
+@if (!empty($showAsField))
 @include("admin::form._footer")
+@endif
