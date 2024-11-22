@@ -1,8 +1,13 @@
 @if($errors->hasBag('exception') && config('app.debug') == true)
-    <?php
+    @php    
         $error = $errors->getBag('exception');
+        
         $trace = json_decode($error->first('trace'));
-    ?>
+        if (!$trace) {
+            $message = $error->getMessages();
+            $trace   = $message['trace'];
+        }    
+    @endphp
     <div class="alert alert-warning alert-dismissable">
         <button type="button" class="close" data-bs-dismiss="alert" aria-hidden="true">×</button>
         <h4>

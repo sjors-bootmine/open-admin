@@ -32,11 +32,25 @@ class Field implements Renderable
     protected $id;
 
     /**
+     * Element parentId.
+     *
+     * @var number|string
+     */
+    public $parentId;
+
+    /**
+     * Element parentColumn.
+     *
+     * @var number|string
+     */
+    public $parentColumn;
+
+    /**
      * unique id to prevent element selector collision
      *
      * @var string
      */
-    protected $uniqueId;
+    public $uniqueId;
 
     /**
      * Element value.
@@ -1642,6 +1656,20 @@ class Field implements Renderable
     public function setLabelClass(array $labelClass, $replace = false): self
     {
         $this->labelClass = $replace ? $labelClass : array_merge($this->labelClass, $labelClass);
+
+        return $this;
+    }
+
+    /**
+     * @param array $labelClass
+     * @param bool  $replace
+     *
+     * @return self
+     */
+    public function setParent($parentColumn, $parentId): self
+    {
+        $this->parentColumn = $parentColumn;
+        $this->parentId     = $parentId;
 
         return $this;
     }

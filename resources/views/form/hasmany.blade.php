@@ -1,19 +1,26 @@
 
-<div class="row has-many-head {{$column}}">
+@if (!empty($showAsField))
+@include("admin::form._header")
+@else
+<div class="row has-many-head {{$column_class}}">
     <h4>{{ $label }}</h4>
 </div>
 
 <hr class="form-border">
+@endif
 
-<div id="has-many-{{$column}}" class="has-many-body has-many-{{$column}}">
+<div id="has-many-{{$column_class}}" class="{{$uniqueId}} has-many-{{$column_class}} has-many-body">
 
-    <div class="has-many-{{$column}}-forms">
+    <div class="{{$uniqueId}} has-many-{{$column_class}}-forms">
 
         @foreach($forms as $pk => $form)
-
-            <div class="has-many-{{$column}}-form fields-group">
+            <div class="{{$uniqueId}} has-many-{{$column}}-form fields-group">                
 
                 @foreach($form->fields() as $field)
+                    @php
+                        $field->setParent($column,$pk);
+                    @endphp
+
                     {!! $field->render() !!}
                 @endforeach
 
@@ -21,7 +28,7 @@
                 <div class="form-group form-delete-group">
                     <label class="{{$viewClass['label']}} form-label"></label>
                     <div class="{{$viewClass['field']}}">
-                        <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
+                        <div class="{{$uniqueId}} has-many-{{$column}}-remove remove btn btn-danger btn-sm pull-right"><i class="icon-trash">&nbsp;</i>{{ trans('admin.remove') }}</div>
                     </div>
                 </div>
                 @endif
@@ -33,15 +40,15 @@
     </div>
 
 
-    <template class="{{$column}}-tpl">
-        <div class="has-many-{{$column}}-form fields-group">
+    <template class="{{$uniqueId}} {{$column_class}}-tpl">
+        <div class="{{$uniqueId}} has-many-{{$column_class}}-form fields-group">           
 
             {!! $template !!}
 
             <div class="form-group form-delete-group">
                 <label class="{{$viewClass['label']}} form-label"></label>
                 <div class="{{$viewClass['field']}}">
-                    <div class="remove btn btn-danger btn-sm pull-right"><i class="icon-trash"></i>&nbsp;{{ trans('admin.remove') }}</div>
+                    <div class="{{$uniqueId}} has-many-{{$column}}-remove remove btn btn-danger btn-sm pull-right"><i class="icon-trash"></i>&nbsp;{{ trans('admin.remove') }}</div>
                 </div>
             </div>
             <hr class="form-border">
@@ -53,9 +60,12 @@
     <div class="has-many-footer form-group">
         <label class="{{$viewClass['label']}} form-label"></label>
         <div class="{{$viewClass['field']}}">
-            <div class="add btn btn-success btn-sm"><i class="icon-save"></i>&nbsp;{{ trans('admin.new') }}</div>
+            <div class="{{$uniqueId}} has-many-{{$column}}-add add btn btn-success btn-sm"><i class="icon-plus"></i>&nbsp;{{ trans('admin.new') }}</div>
         </div>
     </div>
     @endif
 
 </div>
+@if (!empty($showAsField))
+@include("admin::form._header")
+@endif

@@ -9,6 +9,7 @@ use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Form;
 use OpenAdmin\Admin\Form\Concerns\HasFormFlags;
 use OpenAdmin\Admin\Widgets\Form as WidgetForm;
+use Illuminate\Support\Str;
 
 /**
  * Class NestedForm.
@@ -65,7 +66,17 @@ class NestedForm
     /**
      * @var string
      */
+    protected $foreignKey;
+
+    /**
+     * @var string
+     */
     protected $relationName;
+
+    /**
+     * @var string
+     */
+    protected $relationPath;
 
     /**
      * NestedForm key.
@@ -73,6 +84,13 @@ class NestedForm
      * @var Model
      */
     public $model;
+
+    /**
+     * Model data.
+     *
+     * @var Array
+     */
+    public $modelData = null;
 
     /**
      * Fields in form.
@@ -111,10 +129,10 @@ class NestedForm
      * @param string $relation
      * @param Model  $model
      */
-    public function __construct($relation, $model = null)
+    public function __construct($relation, $model = null, $relationPath = '')
     {
         $this->relationName = $relation;
-
+        $this->relationPath = $relationPath;
         $this->model = $model;
 
         $this->fields = new Collection();
@@ -130,6 +148,25 @@ class NestedForm
         return $this->model;
     }
 
+    /**
+     * set Foreign key.
+     *
+     * @return String
+     */
+    public function setForeignKey(string $foreignKey)
+    {
+        $this->foreignKey = $foreignKey;
+    }
+
+    /**
+     * set Foreign key.
+     *
+     * @return String
+     */
+    public function getForeignKey()
+    {
+        return $this->foreignKey;
+    }
     /**
      * Save null values or not.
      *
@@ -487,9 +524,20 @@ class NestedForm
                 $elementClass[$k] = [$this->relationName, $ref_key, $name];
             }
         } else {
-            $errorKey     = sprintf('%s.%s.%s', $this->relationName, $key, $column);
-            $elementName  = sprintf('%s[%s][%s]', $this->relationName, $key, $column);
-            $elementClass = [$this->relationName, $ref_key, $column];
+
+            if (Str::contains($this->relationPath, '.')) {
+                $parent_key = $this->model->{$this->foreignKey} ?? self::PARENT_KEY_NAME;
+
+                $parts = explode('.', $this->relationPath);
+                $errorKey = sprintf('%s.%s.%s.%s.%s', $parts[0], $parent_key, $parts[1], $key, $column);
+                $elementName = sprintf('%s[%s][%s][%s][%s]', $parts[0], $parent_key, $parts[1], $key, $column);
+                $elementClass = [$this->relationPath, $column];
+
+            } else {
+                $errorKey     = sprintf('%s.%s.%s', $this->relationName, $key, $column);
+                $elementName  = sprintf('%s[%s][%s]', $this->relationName, $key, $column);
+                $elementClass = [$this->relationName, $ref_key, $column];
+            }
         }
 
         return $field->setErrorKey($errorKey)
@@ -510,8 +558,14 @@ class NestedForm
         if ($className = Form::findFieldClass($method)) {
             $column = Arr::get($arguments, 0, '');
 
-            /* @var Field $field */
-            $field = new $className($column, array_slice($arguments, 1));
+            if (Form::isRelationField($method)) {
+                $relationPath = $this->relationName.".".$column;
+                /* @var Field $field */                
+                $field = new $className($column, array_slice($arguments, 1), $relationPath);
+            } else {
+                /* @var Field $field */
+                $field = new $className($column, array_slice($arguments, 1));
+            }
 
             if ($this->form instanceof WidgetForm) {
                 $field->setWidgetForm($this->form);
