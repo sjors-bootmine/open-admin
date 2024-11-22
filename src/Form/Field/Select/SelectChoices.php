@@ -102,14 +102,15 @@ class SelectChoices implements SelectDecorator
         $parameters_json = json_encode($parameters);
 
         $this->select->additional_script .= <<<JS
-            var current_value = document.querySelector('select{$vars['js_selector']}').dataset.value;
             admin.ajax.post("{$url}",{$parameters_json},function(data){
+                var current_value = document.querySelector('select{$vars['js_selector']}').dataset.value;
                 for (i in data.data){
                     if (data.data[i].{$valueField} == current_value){
                         data.data[i].selected = true;
                     }
                 }
                 {$vars['js_ins_name']}.setChoices(data.data, '{$valueField}', '{$labelField}', true);
+
             });
         JS;
     }

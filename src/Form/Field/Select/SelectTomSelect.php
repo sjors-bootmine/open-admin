@@ -71,8 +71,8 @@ class SelectTomSelect implements SelectDecorator
         $parameters_json = json_encode($parameters);
 
         $this->select->additional_script .= <<<JS
-            var {$vars['js_ins_name']}_current_value = document.querySelector('select{$vars['js_selector']}').dataset.value;
             admin.ajax.post("{$url}",{$parameters_json},function(data){
+                var {$vars['js_ins_name']}_current_value = document.querySelector('select{$vars['js_selector']}').dataset.value;
                 {$vars['js_ins_name']}.addOptions(data.data);
                 for (i in data.data){
                     if (data.data[i].{$valueField} == {$vars['js_ins_name']}_current_value){
@@ -93,8 +93,8 @@ class SelectTomSelect implements SelectDecorator
         $this->select->additional_script .= <<<JS
             document.querySelector("{$vars['js_selector']}").addEventListener('change', function(event) {
                 var query = {$vars['js_ins_name']}?.getValue();
-                var current_value = {$vars['js_target_ins_name']}?.getValue();
                 admin.ajax.post("{$url}",{query:query},function(data){
+                    var current_value = {$vars['js_target_ins_name']}?.getValue();
                     let found = false;
                     for (i in data.data){
                         if (data.data[i].{$valueField} == current_value){

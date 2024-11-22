@@ -31,8 +31,8 @@ class SelectNative implements SelectDecorator
         $vars            = $this->select->getJsVars();
         $parameters_json = json_encode($parameters);
         $this->select->additional_script .= <<<JS
-            var current_value = document.querySelector('select{$vars['js_selector']}').value;
             admin.ajax.post("{$url}",{$parameters_json},function(data){
+                var current_value = document.querySelector('select{$vars['js_selector']}').value;
                 let field = document.querySelector('select{$vars['js_selector']}')
                 field.innerHTML = '';
                 for (i in data.data){
@@ -50,9 +50,8 @@ class SelectNative implements SelectDecorator
         $this->select->additional_script .= <<<JS
             document.querySelector("{$vars['js_selector']}").addEventListener('change', function(event) {
                 var query = document.querySelector("{$vars['js_selector']}").value;
-                var current_value = document.querySelector("{$vars['js_target_selector']}").value;
                 admin.ajax.post("{$url}",{query:query},function(data){
-
+                    var current_value = document.querySelector("{$vars['js_target_selector']}").value;
                     let field = document.querySelector('select{$vars['js_target_selector']}')
                     field.innerHTML = '';
                     for (i in data.data){
