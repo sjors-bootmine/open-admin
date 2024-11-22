@@ -1,4 +1,7 @@
-preset: recommended
-enabled:
-disabled:
-  - unalign_equals
+php:
+  preset: recommended
+  enabled:
+  - align_double_arrow
+  - align_equals
+  disabled:
+    - unalign_equals
