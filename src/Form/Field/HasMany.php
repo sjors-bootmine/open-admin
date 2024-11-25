@@ -61,18 +61,18 @@ class HasMany extends Field
      * @var string
      */
     protected $viewMode = 'default';
-    
+
     /**
      * show As field
      *
-     * @var boolean
+     * @var bool
      */
     protected $showAsField = false;
 
     /**
      * show As field is set
      *
-     * @var boolean
+     * @var bool
      */
     protected $showAsFieldIsSet = false;
 
@@ -127,17 +127,17 @@ class HasMany extends Field
      */
     public function __construct($relationName, $arguments = [], $relationPath = '')
     {
-        $parts = explode(".", $relationPath);
+        $parts = explode('.', $relationPath);
 
         $this->uniqueId     = $this->uniqueId(10);
         $this->relationPath = $relationPath;
         $this->relationName = $relationName;
-        $this->parent = count($parts) > 1 ? $parts[0] : false;                
+        $this->parent       = count($parts) > 1 ? $parts[0] : false;
 
         $this->column = $relationName;
         // for script tags
-        $this->column_class = str_replace(".", "-", $relationName);
-        $this->column_var = str_replace(".", "_", $relationName);
+        $this->column_class = str_replace('.', '-', $relationName);
+        $this->column_var   = str_replace('.', '_', $relationName);
 
         if (count($arguments) == 1) {
             $this->label   = $this->formatLabel();
@@ -147,7 +147,6 @@ class HasMany extends Field
         if (count($arguments) == 2) {
             list($this->label, $this->builder) = $arguments;
         }
-
     }
 
     public function getNestedForm($model)
@@ -418,7 +417,8 @@ class HasMany extends Field
         $model = $this->form->model();
         if (strpos($this->relationPath, '.') !== false) {
             $parentModel = call_user_func([$model, $this->parent]);
-            $relation = call_user_func([$parentModel->getRelated(), $this->relationName]);
+            $relation    = call_user_func([$parentModel->getRelated(), $this->relationName]);
+
             return $relation->getRelated()->getKeyName();
         } else {
             return $model->{$this->relationName}()->getRelated()->getKeyName();
@@ -439,17 +439,16 @@ class HasMany extends Field
         return $this;
     }
 
-
     /**
      * @return $this
      */
     public function showAsField($set = true): self
     {
         $this->showAsFieldIsSet = true;
-        $this->showAsField = $set;
+        $this->showAsField      = $set;
 
         return $this;
-    }    
+    }
 
     /**
      * Set view mode.
@@ -498,16 +497,13 @@ class HasMany extends Field
             return [];
         }
 
-        $model = $this->form->model();
+        $model       = $this->form->model();
         $parentModel = false;
 
         if (strpos($this->relationPath, '.') !== false) {
-
             $parentModel = call_user_func([$model, $this->parent]);
-            $relation = call_user_func([$parentModel->getRelated(), $this->relationName]);
-
+            $relation    = call_user_func([$parentModel->getRelated(), $this->relationName]);
         } else {
-
             $relation = call_user_func([$model, $this->relationName]);
         }
 
@@ -576,11 +572,11 @@ class HasMany extends Field
      */
     protected function setupScriptForDefaultView($templateScript)
     {
-        $removeClass  = NestedForm::REMOVE_FLAG_CLASS;
-        $defaultKey   = NestedForm::DEFAULT_KEY_NAME;
-        $parentKey    = NestedForm::PARENT_KEY_NAME;
-        $parentId     = $this->parentId;
-        $uniqueId     = $this->uniqueId;
+        $removeClass = NestedForm::REMOVE_FLAG_CLASS;
+        $defaultKey  = NestedForm::DEFAULT_KEY_NAME;
+        $parentKey   = NestedForm::PARENT_KEY_NAME;
+        $parentId    = $this->parentId;
+        $uniqueId    = $this->uniqueId;
 
         /**
          * When add a new sub form, replace all element key in new sub form.
@@ -593,14 +589,14 @@ class HasMany extends Field
             var index = document.querySelectorAll('.{$uniqueId}.has-many-{$this->column_class}-form').length;
             if (document.querySelector('.{$uniqueId}')){
                 document.querySelector('.{$uniqueId}.has-many-{$this->column_class}-add').addEventListener("click", function (event) {
-                    
-                    index++;                                
+
+                    index++;
 
                     var tpl = document.querySelector('template.{$uniqueId}.{$this->column_class}-tpl').innerHTML;
                     tpl = tpl.replace(/{$parentKey}/g, '{$parentId}');
                     tpl = tpl.replace(/{$defaultKey}/g, index);
 
-                    var clone = htmlToElement(tpl);                
+                    var clone = htmlToElement(tpl);
                     addRemoveHasManyListener{$this->column_var}(clone.querySelector('.remove'));
                     document.querySelector('.{$uniqueId}.has-many-{$this->column_class}-forms').appendChild(clone);
 
@@ -611,26 +607,30 @@ class HasMany extends Field
                     let script = `function(){ {$templateScript} }`;
                     script = script.replace(/{$parentKey}/g, '{$parentId}');
                     script = script.replace(/{$defaultKey}/g, index);
-                    
+
                     new Function("return ("+script+")")().apply();
 
-                });            
-                
+                });
+
                 document.querySelectorAll('.{$uniqueId}.has-many-{$this->column_class}-remove').forEach(remove => {
                     addRemoveHasManyListener{$this->column_var}(remove);
                 });
 
                 function addRemoveHasManyListener{$this->column_var}(remove){
                     remove.addEventListener("click", function () {
-                                               
-                        let form = this.closest('.{$uniqueId}.has-many-{$this->column}-form');                        
+
+                        let form = this.closest('.{$uniqueId}.has-many-{$this->column}-form');
+                        console.log("form", form);
+
                         if (typeof(removeHasManyTab{$this->column_var}) == 'function'){
                             removeHasManyTab{$this->column_var}();
                         }
                         form.querySelectorAll('input').forEach(input => input.removeAttribute('required'));
                         hide(this.closest('.{$uniqueId}.has-many-{$this->column_class}-form'));
-                        this.closest('.{$uniqueId}.has-many-{$this->column_class}-form').querySelector('.$removeClass').value = 1;
-                        
+
+                        // sets removal for all children in the form (also sub items with a delete key)
+                        this.closest('.{$uniqueId}.has-many-{$this->column_class}-form').querySelectorAll('.$removeClass').forEach(el => el.value = 1);
+
                         return false;
                     });
                 }
@@ -649,9 +649,8 @@ class HasMany extends Field
      */
     protected function setupScriptForTabView($templateScript)
     {
-        
-        $defaultKey  = NestedForm::DEFAULT_KEY_NAME;        
-        $uniqueId     = $this->uniqueId;
+        $defaultKey = NestedForm::DEFAULT_KEY_NAME;
+        $uniqueId   = $this->uniqueId;
 
         $this->setupScriptForDefaultView($templateScript);
 
@@ -665,7 +664,7 @@ class HasMany extends Field
                 }
             }
             function addHasManyTab{$this->column}(index){
-                
+
                 let tpl = document.querySelector('template.{$uniqueId}.{$this->column_class}-tab-tpl').innerHTML;
                 tpl = tpl.replace(/{$defaultKey}/g, index);
                 let clone = htmlToElement(tpl);
@@ -740,7 +739,7 @@ class HasMany extends Field
 
         $this->setupScript($script);
 
-        return parent::fieldRender([            
+        return parent::fieldRender([
             'uniqueId'      => $this->uniqueId,
             'column_var'    => $this->column_var,
             'column_class'  => $this->column_class,
@@ -803,8 +802,8 @@ class HasMany extends Field
         // specify a view to render.
         $this->view = $this->views[$this->viewMode];
 
-        return parent::fieldRender([           
-            'showAsField'   => $this->showAsFieldIsSet ? $this->showAsField : true, 
+        return parent::fieldRender([
+            'showAsField'   => $this->showAsFieldIsSet ? $this->showAsField : true,
             'uniqueId'      => $this->uniqueId,
             'column_var'    => $this->column_var,
             'column_class'  => $this->column_class,

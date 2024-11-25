@@ -22,19 +22,6 @@ class Table extends HasMany
      * @param string $column
      * @param array  $arguments
      */
-    public function __construct($column, $arguments = [])
-    {
-        $this->column = $column;
-
-        if (count($arguments) == 1) {
-            $this->label   = $this->formatLabel();
-            $this->builder = $arguments[0];
-        }
-
-        if (count($arguments) == 2) {
-            list($this->label, $this->builder) = $arguments;
-        }
-    }
 
     /**
      * Save null values or not.
@@ -62,7 +49,7 @@ class Table extends HasMany
                 if ($data[NestedForm::REMOVE_FLAG_NAME] == 1) {
                     continue;
                 }
-                $data = empty($data) ? [] : $data;
+                $data        = empty($data) ? [] : $data;
                 $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $key)->fill($data);
             }
         } else {
@@ -70,10 +57,11 @@ class Table extends HasMany
                 if (isset($data['pivot'])) {
                     $data = array_merge($data, $data['pivot']);
                 }
-                $data = empty($data) ? [] : $data;
+                $data        = empty($data) ? [] : $data;
                 $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $key)->fill($data);
             }
         }
+
         return $forms;
     }
 
@@ -92,6 +80,7 @@ class Table extends HasMany
             return Arr::get($item, NestedForm::REMOVE_FLAG_NAME) == 1;
         })->map(function ($item) {
             unset($item[NestedForm::REMOVE_FLAG_NAME]);
+
             return $item;
         })->toArray();
 
@@ -131,8 +120,8 @@ class Table extends HasMany
     public function render()
     {
         if (!empty($this->form->model()->getRelations()[$this->column])) {
-            throw new FieldException("\$form->table() is not supported for relations, use json / text field type. Or use \$form->hasMany() for relations with mode=table");
-        };
+            throw new FieldException('$form->table() is not supported for relations, use json / text field type. Or use $form->hasMany() for relations with mode=table');
+        }
 
         return $this->renderTable();
     }

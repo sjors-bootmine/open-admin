@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use OpenAdmin\Admin\Admin;
 use OpenAdmin\Admin\Form;
+use OpenAdmin\Admin\Form\Field\Traits\HasUniqueId;
 use OpenAdmin\Admin\Widgets\Form as WidgetForm;
 
 /**
@@ -18,7 +19,7 @@ use OpenAdmin\Admin\Widgets\Form as WidgetForm;
  */
 class Field implements Renderable
 {
-    use Macroable;
+    use Macroable, HasUniqueId;
 
     public const FILE_DELETE_FLAG = '_file_del_';
     public const FILE_SORT_FLAG   = '_file_sort_';
@@ -44,13 +45,6 @@ class Field implements Renderable
      * @var number|string
      */
     public $parentColumn;
-
-    /**
-     * unique id to prevent element selector collision
-     *
-     * @var string
-     */
-    public $uniqueId;
 
     /**
      * Element value.
@@ -358,18 +352,6 @@ class Field implements Renderable
             'css' => static::$css,
             'js'  => static::$js,
         ];
-    }
-
-    public function uniqueId($length = 10)
-    {
-        $characters       = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $charactersLength = strlen($characters);
-        $randomString     = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-
-        return $randomString;
     }
 
     /**
@@ -1522,6 +1504,7 @@ class Field implements Renderable
 
             return $classes;
         }
+        $elementClass = str_replace(['>', ' '], '.', $elementClass);
 
         return '.'.implode('.', $elementClass);
     }
@@ -1535,7 +1518,7 @@ class Field implements Renderable
     {
         $elementClassSelector = $this->getElementClassSelector();
 
-        return str_replace(['-', '.', '>'], '_', $elementClassSelector);
+        return str_replace(['-', '.', '>', ' '], '_', $elementClassSelector);
     }
 
     /**

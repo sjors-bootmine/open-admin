@@ -110,6 +110,7 @@ trait HasResource
     {
         $column                  = $this->column();
         $this->modalInitFunction = str_replace('-', '_', $this->modalID).'_init';
+        $selectorClass           = $this->getElementClassSelector();
 
         $script = <<<JS
 
@@ -117,7 +118,7 @@ trait HasResource
                 var grid,table,gridHolder,addBtn;
 
                 function initGrid_{$column}(){
-                    grid = document.querySelector('.{$this->relation_prefix}{$column}');
+                    grid = document.querySelector('{$selectorClass}.form-grid');
                     table = grid.querySelector('.grid-table');
                     gridHolder = grid.querySelector('.grid-holder');
                     addBtn = grid.querySelector(".grid-create-btn");
@@ -196,7 +197,7 @@ trait HasResource
      */
     public function render()
     {
-        $this->modalID = sprintf('modal-selector-%s', $this->getElementClassString());
+        $this->modalID = sprintf('modal-selector-%s', $this->getVariableName());
         $this->getResourceable();
         $this->addScript()->addModal();
 

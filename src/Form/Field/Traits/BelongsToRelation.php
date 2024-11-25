@@ -27,6 +27,7 @@ trait BelongsToRelation
     public function __construct($column, $arguments = [])
     {
         $this->setSelectable($arguments[0]);
+        $this->setPrependElementClass($this->relation_prefix);
 
         parent::__construct($column, array_slice($arguments, 1));
     }
@@ -97,11 +98,10 @@ trait BelongsToRelation
 
     public function addScript()
     {
-        $column = $this->column();
-
-        $script = <<<JS
+        $selectorClass = $this->getElementClassSelector();
+        $script        = <<<JS
 ;(function () {
-    var grid = document.querySelector('.{$this->relation_prefix}{$column}');
+    var grid = document.querySelector('{$selectorClass}.form-grid');
     var table = grid.querySelector('.grid-table');
 
     // remove row
@@ -112,19 +112,19 @@ trait BelongsToRelation
             var tr = event.target.closest('tr');
 
             var removeKey = tr.dataset.key;
-            var field = document.querySelectorAll("{$this->getElementClassSelector()} option").forEach(option=>{
+            var field = document.querySelectorAll("{$selectorClass} option").forEach(option=>{
                 if (option.value == removeKey){
                     option.remove();
                 }
             })
 
             if ("{$this->relation_type}" == "one"){
-                document.querySelector("{$this->getElementClassSelector()}").value = null;
+                document.querySelector("{$selectorClass}").value = null;
             }
             tr.remove();
 
             if (table.querySelectorAll('tbody tr').length == 0){
-                var empty = document.querySelector('.{$this->relation_prefix}{$column} template.empty').innerHTML;
+                var empty = document.querySelector('{$selectorClass} template.empty').innerHTML;
                 var clone = htmlToElement(empty);
                 table.querySelector('tbody').appendChild(clone);
             }
@@ -133,7 +133,7 @@ trait BelongsToRelation
 
     setValue = function(values,rows){
 
-        var field = document.querySelector("{$this->getElementClassSelector()}");
+        var field = document.querySelector("{$selectorClass}");
         field.innerHTML = "";
 
         var tbody = table.querySelector('tbody');
@@ -160,12 +160,12 @@ trait BelongsToRelation
     }
 
     function getValue(){
-        var field = document.querySelector("{$this->getElementClassSelector()}");
+        var field = document.querySelector("{$selectorClass}");
         if ("{$this->relation_type}" == "one"){
             return field.value;
         }else{
             var arr = []
-            document.querySelectorAll("{$this->getElementClassSelector()} option").forEach(option=>{
+            document.querySelectorAll("{$selectorClass} option").forEach(option=>{
                 if (option.selected){
                     arr.push(option.value);
                 }
@@ -177,7 +177,7 @@ trait BelongsToRelation
     var config = {
         url : "{$this->getLoadUrl()}",
         modal_elm : document.querySelector('#{$this->modalID}'),
-        trigger : '.{$this->relation_prefix}{$column} .select-relation',
+        trigger : '{$selectorClass} .select-relation',
         update : setValue,
         value : getValue
     }
@@ -209,7 +209,7 @@ JS;
      */
     public function render()
     {
-        $this->modalID = sprintf('modal-selector-%s', $this->getElementClassString());
+        $this->modalID = sprintf('modal-selector-%s', $this->getVariableName());
 
         $this->addScript()->addModal();
 
