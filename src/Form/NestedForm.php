@@ -57,7 +57,8 @@ use OpenAdmin\Admin\Widgets\Form as WidgetForm;
  */
 class NestedForm
 {
-    use HasFormFlags, HasUniqueId;
+    use HasFormFlags;
+    use HasUniqueId;
 
     /**
      * @var mixed
@@ -533,7 +534,7 @@ class NestedForm
                 $parts        = explode('.', $this->relationPath);
                 $errorKey     = sprintf('%s.%s.%s.%s.%s', $parts[0], $parent_key, $parts[1], $key, $column);
                 $elementName  = sprintf('%s[%s][%s][%s][%s]', $parts[0], $parent_key, $parts[1], $key, $column);
-                $elementClass = [$this->uniqueId, str_replace('.', ' ', $this->relationPath), $column];
+                $elementClass = [$this->uniqueId, str_replace('.', ' ', $this->relationPath), $ref_key, $column];
             } else {
                 $errorKey     = sprintf('%s.%s.%s', $this->relationName, $key, $column);
                 $elementName  = sprintf('%s[%s][%s]', $this->relationName, $key, $column);

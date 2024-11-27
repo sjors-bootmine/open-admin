@@ -23,9 +23,9 @@ class MultipleFile extends Field
     ];
 
     public $must_prepare = true;
-    public $type = 'file';
-    public $readonly = false;
-    public $multiple = true;
+    public $type         = 'file';
+    public $readonly     = false;
+    public $multiple     = true;
 
     /**
      * Create a new File instance.
@@ -52,7 +52,7 @@ class MultipleFile extends Field
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getValidator(array $input)
     {
@@ -302,7 +302,7 @@ class MultipleFile extends Field
         foreach ($files as $index => $file) {
             if (is_array($file) && $this->pathColumn) {
                 $index = Arr::get($file, $this->getRelatedKeyName(), $index);
-                $file = Arr::get($file, $this->pathColumn);
+                $file  = Arr::get($file, $this->pathColumn);
             }
 
             $preview = array_merge([
@@ -423,7 +423,7 @@ class MultipleFile extends Field
         }
 
         foreach ($files as $key => $file_obj) {
-            $file = $file_obj[$this->pathColumn];
+            $file                           = $file_obj[$this->pathColumn];
             $files[$key][$this->sortColumn] = array_search($file, $order);
         }
 
@@ -454,8 +454,8 @@ class MultipleFile extends Field
         $this->setType();
         $this->attribute('id', $id);
         $this->options['storageUrl'] = $this->storageUrl();
-        $json_options = json_encode($this->options);
-        $this->script = <<<JS
+        $json_options                = json_encode($this->options);
+        $this->script                = <<<JS
         var FileUpload_{$id} = new FileUpload(document.querySelector('#{$id}'),{$json_options});
         JS;
     }

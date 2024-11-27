@@ -376,6 +376,16 @@ class HasMany extends Field
         return $form->setOriginal($this->original, $this->getKeyName())->prepare($input);
     }
 
+    public function maybeNeedsForeignKey($relationPath)
+    {
+        if (strpos($relationPath, ".") !== false) {
+            $parts = explode(".", $relationPath);
+            return $this->form->model->{$parts[0]}()->getRelated()->{$parts[1]}()->getForeignKeyName();
+        }
+
+        return false;
+    }
+
     /**
      * Build a Nested form.
      *
@@ -388,6 +398,11 @@ class HasMany extends Field
     protected function buildNestedForm($column, \Closure $builder, $model = null)
     {
         $form = new NestedForm($column, $model, $this->relationPath);
+
+        $setForeignKey = $this->maybeNeedsForeignKey($this->relationPath);
+        if ($setForeignKey) {
+            $form->setForeignKey($setForeignKey);
+        }
 
         if ($this->form instanceof WidgetForm) {
             $form->setWidgetForm($this->form);
@@ -713,6 +728,18 @@ class HasMany extends Field
         return $this;
     }
 
+    public function hasParentId()
+    {
+        $has_parent = true;
+        if (Str::contains($this->relationPath, '.')) {
+            if (!$this->parentId) {
+                $has_parent = false;
+            }
+        }
+
+        return $has_parent;
+    }
+
     /**
      * Render the `HasMany` field.
      *
@@ -740,6 +767,8 @@ class HasMany extends Field
         $this->setupScript($script);
 
         return parent::fieldRender([
+            'showAsField'   => $this->showAsFieldIsSet ? $this->showAsField : false,
+            'has_parent'    => $this->hasParentId(),
             'uniqueId'      => $this->uniqueId,
             'column_var'    => $this->column_var,
             'column_class'  => $this->column_class,
@@ -803,6 +832,7 @@ class HasMany extends Field
         $this->view = $this->views[$this->viewMode];
 
         return parent::fieldRender([
+            'has_parent'    => $this->hasParentId(),
             'showAsField'   => $this->showAsFieldIsSet ? $this->showAsField : true,
             'uniqueId'      => $this->uniqueId,
             'column_var'    => $this->column_var,

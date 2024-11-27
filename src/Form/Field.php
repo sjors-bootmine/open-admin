@@ -1299,7 +1299,7 @@ class Field implements Renderable
      */
     public function hasRelation()
     {
-        if (!$this->isJsonType() && strpos($this->column, '.') !== false) {
+        if (!$this->isJsonType() && !is_array($this->column) && strpos($this->column, '.') !== false) {
             return true;
         }
 

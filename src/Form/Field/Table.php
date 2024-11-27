@@ -17,6 +17,30 @@ class Table extends HasMany
     public $save_null_values = true;
 
     /**
+     * Create a new HasMany field instance. With a real relation
+     *
+     * @param $relationName
+     * @param array $arguments
+     */
+    public function __construct($column, $arguments = [])
+    {
+        $this->uniqueId = $this->uniqueId(10);
+        $this->column   = $column;
+        // for script tags
+        $this->column_class = str_replace('.', '-', $column);
+        $this->column_var   = str_replace('.', '_', $column);
+
+        if (count($arguments) == 1) {
+            $this->label   = $this->formatLabel();
+            $this->builder = $arguments[0];
+        }
+
+        if (count($arguments) == 2) {
+            list($this->label, $this->builder) = $arguments;
+        }
+    }
+
+    /**
      * Table constructor.
      *
      * @param string $column
