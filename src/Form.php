@@ -859,8 +859,10 @@ class Form implements Renderable
                             Arr::forget($relationValues, static::REMOVE_FLAG_NAME);
                             Arr::forget($relationValues, $fieldsWithRelation);
 
-                            $child->fill($relationValues);
-                            $child->save();
+                            if (!empty($relationValues)) {
+                                $child->fill($relationValues);
+                                $child->save();
+                            }
 
                             foreach ($fieldsWithRelation as $relationSubField) {
                                 // get the unprepared data
