@@ -9,7 +9,7 @@ class LinkedResource extends Field
 {
     use HasResource;
 
-    protected $relation_prefix = 'hasmany-';
+    protected $relation_prefix = 'hasmany';
     protected $relation_type   = 'hasMany';
     protected $multiple        = true;
     protected $relationName;

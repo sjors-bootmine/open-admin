@@ -7,7 +7,7 @@
         @endforeach
     </select>
 
-    <div class="{{$relation_prefix}}{{ $class }} form-grid form-grid-rows">
+    <div class="{{ $class }} form-grid form-grid-rows">
         @if ($grid_message)
             <div class="alert alert-warning">{{$grid_message}}</div>
         @else

@@ -17,14 +17,18 @@ class Table extends HasMany
     public $save_null_values = true;
 
     /**
-     * Table constructor.
+     * Create a new HasMany field instance. With a real relation
      *
-     * @param string $column
-     * @param array  $arguments
+     * @param $relationName
+     * @param array $arguments
      */
     public function __construct($column, $arguments = [])
     {
-        $this->column = $column;
+        $this->uniqueId = $this->uniqueId(10);
+        $this->column   = $column;
+        // for script tags
+        $this->column_class = str_replace('.', '-', $column);
+        $this->column_var   = str_replace('.', '_', $column);
 
         if (count($arguments) == 1) {
             $this->label   = $this->formatLabel();
@@ -35,6 +39,13 @@ class Table extends HasMany
             list($this->label, $this->builder) = $arguments;
         }
     }
+
+    /**
+     * Table constructor.
+     *
+     * @param string $column
+     * @param array  $arguments
+     */
 
     /**
      * Save null values or not.
@@ -62,7 +73,7 @@ class Table extends HasMany
                 if ($data[NestedForm::REMOVE_FLAG_NAME] == 1) {
                     continue;
                 }
-                $data = empty($data) ? [] : $data;
+                $data        = empty($data) ? [] : $data;
                 $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $key)->fill($data);
             }
         } else {
@@ -70,10 +81,11 @@ class Table extends HasMany
                 if (isset($data['pivot'])) {
                     $data = array_merge($data, $data['pivot']);
                 }
-                $data = empty($data) ? [] : $data;
+                $data        = empty($data) ? [] : $data;
                 $forms[$key] = $this->buildNestedForm($this->column, $this->builder, $key)->fill($data);
             }
         }
+
         return $forms;
     }
 
@@ -92,6 +104,7 @@ class Table extends HasMany
             return Arr::get($item, NestedForm::REMOVE_FLAG_NAME) == 1;
         })->map(function ($item) {
             unset($item[NestedForm::REMOVE_FLAG_NAME]);
+
             return $item;
         })->toArray();
 
@@ -131,8 +144,8 @@ class Table extends HasMany
     public function render()
     {
         if (!empty($this->form->model()->getRelations()[$this->column])) {
-            throw new FieldException("\$form->table() is not supported for relations, use json / text field type. Or use \$form->hasMany() for relations with mode=table");
-        };
+            throw new FieldException('$form->table() is not supported for relations, use json / text field type. Or use $form->hasMany() for relations with mode=table');
+        }
 
         return $this->renderTable();
     }

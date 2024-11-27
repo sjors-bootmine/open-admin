@@ -572,14 +572,20 @@ class Form implements Renderable
         }
 
         /* @var Model $this ->model */
-        $builder = $this->model();
+        $model = $this->model();
 
         if ($this->isSoftDeletes) {
-            $builder = $builder->withTrashed();
+            $model = $model->withTrashed();
         }
 
-        $this->model = $builder->with($this->getRelations())->findOrFail($id);
+        $withRelations = $this->getRelations();
 
+        // prevent relation update for inline edits
+        if (!empty($data['_edit_inline'])) {
+            $withRelations = array_intersect($withRelations, array_keys($data));
+        }
+
+        $this->model = $model->with($withRelations)->findOrFail($id);
         $this->setFieldOriginalValue();
 
         // Handle validation errors.
@@ -595,14 +601,16 @@ class Form implements Renderable
             return $response;
         }
 
-        DB::transaction(function () {
+        DB::transaction(function () use ($withRelations) {
             $updates = $this->prepareUpdate($this->updates);
             foreach ($updates as $column => $value) {
                 /* @var Model $this ->model */
                 $this->model->setAttribute($column, $value);
             }
             $this->model->save();
-            $this->updateRelation($this->relations);
+            if (!empty($withRelations)) {
+                $this->updateRelation($this->relations);
+            }
         });
 
         if (($result = $this->callSaved()) instanceof Response) {
@@ -837,17 +845,16 @@ class Form implements Renderable
                             $relation = $model->$name();
 
                             $keyName = $relation->getRelated()->getKeyName();
+                            $key     = Arr::get($relationValues, $keyName);
 
                             /** @var Model $child */
-                            $child = $relation->findOrNew(Arr::get($relationValues, $keyName));
+                            $child              = $relation->findOrNew($key);
+                            $fieldsWithRelation = $this->getSubRelationsField($name);
 
                             if (Arr::get($relationValues, static::REMOVE_FLAG_NAME) == 1) {
                                 $child->delete();
                                 continue;
                             }
-
-                            $fieldsWithRelation = $this->getSubRelationsField($name);
-                            $subRelationsValues = Arr::only($relationValues, $fieldsWithRelation);
 
                             Arr::forget($relationValues, static::REMOVE_FLAG_NAME);
                             Arr::forget($relationValues, $fieldsWithRelation);
@@ -856,13 +863,18 @@ class Form implements Renderable
                             $child->save();
 
                             foreach ($fieldsWithRelation as $relationSubField) {
-                                $this->processSubRelations($child, $relation, $name, $relationSubField, $subRelationsValues);
+                                // get the unprepared data
+                                if ($key) {
+                                    $subRelationsValues = [$relationSubField => Arr::get($relationsData[$name][$key], $relationSubField)];
+                                    $this->processSubRelations($child, $relation, $name, $relationSubField, $subRelationsValues);
+                                }
                             }
                         }
                     }
                     break;
             }
         }
+        // dd("exit");
         // if exist before end
         // db transation will not run
     }
@@ -1159,13 +1171,13 @@ class Form implements Renderable
     {
         $relations = $this->getRelations();
 
-        $builder = $this->model();
+        $model = $this->model();
 
         if ($this->isSoftDeletes) {
-            $builder = $builder->withTrashed();
+            $model = $model->withTrashed();
         }
 
-        $this->model = $builder->with($relations)->findOrFail($id);
+        $this->model = $model->with($relations)->findOrFail($id);
 
         $this->callEditing();
 

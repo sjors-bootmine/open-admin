@@ -21,9 +21,9 @@ trait Sortable
     public function addSortable($pref = '', $suf = '')
     {
         if (!empty($this->options['sortable'])) {
+            $selector = $this->column_class ?? $this->column;
             $script = <<<JS
-
-                var sortable = new Sortable(document.querySelector('{$pref}{$this->column}{$suf}'), {
+                var sortable = new Sortable(document.querySelector('{$pref}{$selector}{$suf}'), {
                     animation:150,
                     handle: ".handle"
                 });
